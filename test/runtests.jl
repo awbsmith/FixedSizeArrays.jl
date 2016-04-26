@@ -369,6 +369,7 @@ end
 
 v2 = Vec(6.0,5.0,4.0)
 v1 = Vec(1.0,2.0,3.0)
+vi = Vec(1,2,3)
 v2 = Vec(6.0,5.0,4.0)
 v1c = Vec(6.0+3.im,5.0-2im,4.0+0.im)
 v2c = v1 + v2*im
@@ -516,6 +517,9 @@ context("Ops") do
 	context("Multiplication") do
 		@fact @inferred(v1.*v2) --> Vec3d(6.0,10.0,12.0)
 	end
+    context("Mixed Type Multiplication") do
+		@fact @inferred(vi.*v2) --> Vec3d(6.0,10.0,12.0)
+	end
 	context("Division") do
 		@fact @inferred(v1 ./ v1) --> Vec3d(1.0,1.0,1.0)
 	end
@@ -577,6 +581,9 @@ context("Ops") do
         # cross product
         @fact cross(v1,v2) --> Vec3d(-7.0,14.0,-7.0)
         @fact isa(cross(v1,v2),Vec3d)  --> true
+
+        @fact cross(vi,v2) --> Vec3d(-7.0,14.0,-7.0)
+        @fact isa(cross(vi,v2),Vec3d)  --> true
     end
 
     context("hypot") do
@@ -792,6 +799,13 @@ context("Matrix Math") do
         m2fs = Mat(m2)
         mfsc = Mat(mc)
 
+        vi = randperm(j)
+        mi = reshape(randperm(i*j), i, j)
+        mi2 = reshape(randperm(i*j), i, j)
+        vifs = Vec(vi)
+        mifs = Mat(mi)
+        mi2fs = Mat(mi2)
+
 		context("Matrix{$i, $j} * Vector{$j}") do
 			vm = m * v
 			@fact isapprox(@inferred(mfs * vfs), vm)  --> true
@@ -804,6 +818,21 @@ context("Matrix Math") do
 			mm = m*(2)
 			@fact isapprox(@inferred(m*(2I)), mm)  --> true
 		end
+
+        # test different element types
+        context("Matrix{$i, $j, T} * Vector{$j, U}") do
+			vmi = mi * v
+			@fact isapprox(@inferred(mifs * vfs), vmi)  --> true
+            vmi = m * vi
+			@fact isapprox(@inferred(mfs * vifs), vmi)  --> true
+		end
+        context("Matrix{$i, $j, T} * Matrix{$j, $i, U}") do
+			mmi = mi * m2'
+			@fact isapprox(@inferred(mifs * m2fs'), mmi)  --> true
+            mmi = m * mi2'
+			@fact isapprox(@inferred(mfs * mi2fs'), mmi)  --> true
+		end
+
 
 		if i == j
             context("(2*I + I*M)\\v") do
@@ -853,7 +882,6 @@ context("Matrix Math") do
                 @fact_throws DimensionMismatch mfs * mfs
             end
         end
-
 		context("transpose M") do
 			mm = m'
 			fmm = mfs'
