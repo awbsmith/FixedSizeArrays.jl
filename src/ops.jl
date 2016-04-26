@@ -138,17 +138,17 @@ call(::BilinearDotFunctor, a, b) = a*b
 @inline bilindot{T1, T2, N}(a::NTuple{N,T1}, b::FixedArray{T2,1,Tuple{N}}) = sum(map(DotFunctor(), promote(a, b)...))
 
 
-@inline bilindot{T,U}(a::NTuple{1,T}, b::NTuple{1,U}) = @inbounds return a[1]*b[1]
-@inline bilindot{T,U}(a::NTuple{2,T}, b::NTuple{2,U}) = @inbounds return (a[1]*b[1] + a[2]*b[2])
-@inline bilindot{T,U}(a::NTuple{3,T}, b::NTuple{3,U}) = @inbounds return (a[1]*b[1] + a[2]*b[2] + a[3]*b[3])
-@inline bilindot{T,U}(a::NTuple{4,T}, b::NTuple{4,U}) = @inbounds return (a[1]*b[1] + a[2]*b[2] + a[3]*b[3]+a[4]*b[4])
+@inline bilindot{T1, T2}(a::NTuple{1,T1}, b::NTuple{1,T2}) = @inbounds return a[1]*b[1]
+@inline bilindot{T1, T2}(a::NTuple{2,T1}, b::NTuple{2,T2}) = @inbounds return (a[1]*b[1] + a[2]*b[2])
+@inline bilindot{T1, T2}(a::NTuple{3,T1}, b::NTuple{3,T2}) = @inbounds return (a[1]*b[1] + a[2]*b[2] + a[3]*b[3])
+@inline bilindot{T1, T2}(a::NTuple{4,T1}, b::NTuple{4,T2}) = @inbounds return (a[1]*b[1] + a[2]*b[2] + a[3]*b[3]+a[4]*b[4])
 @inline bilindot{T1, T2, N}(a::NTuple{N,T1}, b::NTuple{N,T2}) = sum(map(DotFunctor(), promote(a, b)...))
 
 
 
 
 #cross{T}(a::FixedVector{2, T}, b::FixedVector{2, T}) = a[1]*b[2]-a[2]*b[1] # not really used!?
-@inline cross{T<:Number, U <: Number}(a::FixedVector{3, T}, b::FixedVector{3, U}) = @inbounds return Vec(
+@inline cross{T1 <: Number, T2 <: Number}(a::FixedVector{3, T1}, b::FixedVector{3, T2}) = @inbounds return Vec(
     a[2]*b[3]-a[3]*b[2],
     a[3]*b[1]-a[1]*b[3],
     a[1]*b[2]-a[2]*b[1]
@@ -189,7 +189,7 @@ trace(A::FixedMatrix{2,2}) = A[1,1] + A[2,2]
 trace(A::FixedMatrix{3,3}) = A[1,1] + A[2,2] + A[3,3]
 trace(A::FixedMatrix{4,4}) = A[1,1] + A[2,2] + A[3,3] + A[4,4]
 
-\{m,n,T, U}(mat::Mat{m,n,T}, v::Vec{n, U}) = inv(mat)*v
+\{m,n,T1,T2}(mat::Mat{m,n,T1}, v::Vec{n,T2}) = inv(mat)*v
 
 @inline inv{T}(A::Mat{1, 1, T}) = @inbounds return Mat{1, 1, T}(inv(A[1]))
 @inline function inv{T}(A::Mat{2, 2, T})
@@ -267,25 +267,25 @@ chol!(m::Mat, ::Type{UpperTriangular}) = chol(m)
 chol!(m::Mat, ::Type{Val{:U}}) = chol!(m, UpperTriangular)
 
 # Matrix
-(*){T, U, M, N, O, K}(a::FixedMatrix{M, N, T}, b::FixedMatrix{O, K, U}) = throw(DimensionMismatch("$N != $O in $(typeof(a)) and $(typeof(b))"))
-(*){T, U, M, N, O}(a::FixedMatrix{M, N, T}, b::FixedVector{O, U}) = throw(DimensionMismatch("$N != $O in $(typeof(a)) and $(typeof(b))"))
+(*){T1, T2, M, N, O, K}(a::FixedMatrix{M, N, T1}, b::FixedMatrix{O, K, T2}) = throw(DimensionMismatch("$N != $O in $(typeof(a)) and $(typeof(b))"))
+(*){T1, T2, M, N, O}(a::FixedMatrix{M, N, T1}, b::FixedVector{O, T2}) = throw(DimensionMismatch("$N != $O in $(typeof(a)) and $(typeof(b))"))
 
-@generated function *{T, U, N}(a::FixedVector{N, T}, b::FixedMatrix{1, N, U})
+@generated function *{T1, T2, N}(a::FixedVector{N, T1}, b::FixedMatrix{1, N, T2})
     expr = Expr(:tuple, [Expr(:tuple, [:(a[$i] * b[$j]) for i in 1:N]...) for j in 1:N]...)
     :( Mat($(expr)) )
 end
 
-@generated function *{T, U, M, N}(a::Mat{M, N, T}, b::FixedVectorNoTuple{N, U})
-    oT = promote_type(T, U)
+@generated function *{T1, T2, M, N}(a::Mat{M, N, T1}, b::FixedVectorNoTuple{N, T2})
+    oT = promote_type(T1, T2)
     expr = [:(bilindot(row(a, $i), b)::$(oT)) for i=1:M]
     :( Vec{$(M), $(oT)}($(expr...)))
 end
 
-@generated function *{T, U, M, N}(a::Mat{M, N, T}, b::Vec{N,U})
+@generated function *{T1, T2, M, N}(a::Mat{M, N, T1}, b::Vec{N,T2})
     expr = [:(bilindot(row(a, $i), b.(1))) for i=1:M]
     :( Vec($(expr...)) )
 end
-@generated function *{T, U, M, N, R}(a::Mat{M, N, T}, b::Mat{N, R, U})
+@generated function *{T1, T2, M, N, R}(a::Mat{M, N, T1}, b::Mat{N, R, T2})
     expr = Expr(:tuple, [Expr(:tuple, [:(bilindot(row(a, $i), column(b,$j))) for i in 1:M]...) for j in 1:R]...)
     :( Mat($(expr)) )
 end
