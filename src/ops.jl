@@ -118,7 +118,7 @@ call(::DotFunctor, a, b) = a'*b
 @inline dot{T, N}(a::FixedArray{T,1,Tuple{N}}, b::FixedArray{T,1,Tuple{N}}) = sum(map(DotFunctor(), a, b))
 @inline dot{T1, T2, N}(a::FixedArray{T1,1,Tuple{N}}, b::FixedArray{T2,1,Tuple{N}}) = sum(map(DotFunctor(), promote(a, b)...))
 
-immutable BilinearDotFunctor <: Functor{2} end
+immutable BilinearDotFunctor <: Func{2} end
 call(::BilinearDotFunctor, a, b) = a*b
 @inline bilindot{T <: Union{FixedArray, Tuple}}(a::T, b::T) = sum(map(BilinearDotFunctor(), a, b))
 @inline bilindot{T1 <: Tuple, T2 <: FixedArray}(a::T1, b::T2) = sum(map(BilinearDotFunctor(), a, b))
@@ -329,7 +329,3 @@ Base.Test.approx_full(a::FixedArray) = a
 +{m, n, T}(J::Base.LinAlg.UniformScaling, A::Mat{m,n, T}) = A + J
 -{m, n, T}(A::Mat{m,n, T}, J::Base.LinAlg.UniformScaling) = A + (-J)
 -{m, n, T}(J::Base.LinAlg.UniformScaling, A::Mat{m,n, T}) = J.λ*eye(Mat{m,n,T}) - A
-<<<<<<< HEAD
-
-=======
->>>>>>> some speed improvements
