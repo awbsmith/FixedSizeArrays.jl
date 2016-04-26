@@ -329,4 +329,7 @@ Base.Test.approx_full(a::FixedArray) = a
 +{m, n, T}(J::Base.LinAlg.UniformScaling, A::Mat{m,n, T}) = A + J
 -{m, n, T}(A::Mat{m,n, T}, J::Base.LinAlg.UniformScaling) = A + (-J)
 -{m, n, T}(J::Base.LinAlg.UniformScaling, A::Mat{m,n, T}) = J.λ*eye(Mat{m,n,T}) - A
+<<<<<<< HEAD
 
+=======
+>>>>>>> some speed improvements
