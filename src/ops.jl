@@ -148,7 +148,7 @@ call(::BilinearDotFunctor, a, b) = a*b
 
 
 #cross{T}(a::FixedVector{2, T}, b::FixedVector{2, T}) = a[1]*b[2]-a[2]*b[1] # not really used!?
-@inline cross{T1 <: Number, T2 <: Number}(a::FixedVector{3, T1}, b::FixedVector{3, T2}) = @inbounds return Vec(
+@inline cross{T1 <: Number, T2 <: Number}(a::FixedVector{3, T1}, b::FixedVector{3, T2}) = @inbounds return similar(typeof(a), promote_type(T1, T2))(
     a[2]*b[3]-a[3]*b[2],
     a[3]*b[1]-a[1]*b[3],
     a[1]*b[2]-a[2]*b[1]
