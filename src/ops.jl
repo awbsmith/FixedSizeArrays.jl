@@ -118,7 +118,7 @@ call(::DotFunctor, a, b) = a'*b
 @inline dot{T, N}(a::FixedArray{T,1,Tuple{N}}, b::FixedArray{T,1,Tuple{N}}) = sum(map(DotFunctor(), a, b))
 @inline dot{T1, T2, N}(a::FixedArray{T1,1,Tuple{N}}, b::FixedArray{T2,1,Tuple{N}}) = sum(map(DotFunctor(), promote(a, b)...))
 
-immutable BilinearDotFunctor <: Func{2} end
+immutable BilinearDotFunctor <: Functor{2} end
 call(::BilinearDotFunctor, a, b) = a*b
 @inline bilindot{T <: Union{FixedArray, Tuple}}(a::T, b::T) = sum(map(BilinearDotFunctor(), a, b))
 @inline bilindot{T1 <: Tuple, T2 <: FixedArray}(a::T1, b::T2) = sum(map(BilinearDotFunctor(), a, b))
@@ -128,21 +128,20 @@ immutable BilinearDotFunctor <: Func{2} end
 call(::BilinearDotFunctor, a, b) = a*b
 @inline bilindot{T <: Union{FixedArray, Tuple}}(a::T, b::T) = sum(map(DotFunctor(), a, b))
 
-@inline bilindot{T, N}(a::FixedArray{T,1,Tuple{N}}, b::FixedArray{T,1,Tuple{N}}) = sum(map(DotFunctor(), a, b))
-@inline bilindot{T1, T2, N}(a::FixedArray{T1,1,Tuple{N}}, b::FixedArray{T2,1,Tuple{N}}) = sum(map(DotFunctor(), promote(a, b)...))
+@inline bilindot{T, N}(a::FixedArray{T,1,Tuple{N}}, b::FixedArray{T,1,Tuple{N}}) = sum(map(BilinearDotFunctor(), a, b))
+@inline bilindot{T1, T2, N}(a::FixedArray{T1,1,Tuple{N}}, b::FixedArray{T2,1,Tuple{N}}) = sum(map(BilinearDotFunctor(), promote(a, b)...))
 
-@inline bilindot{T, N}(a::FixedArray{T,1,Tuple{N}}, b::NTuple{N,T}) = sum(map(DotFunctor(), a, b))
-@inline bilindot{T1, T2, N}(a::FixedArray{T1,1,Tuple{N}}, b::NTuple{N,T2}) = sum(map(DotFunctor(), promote(a, b)...))
+@inline bilindot{T, N}(a::FixedArray{T,1,Tuple{N}}, b::NTuple{N,T}) = sum(map(BilinearDotFunctor(), a, b))
+@inline bilindot{T1, T2, N}(a::FixedArray{T1,1,Tuple{N}}, b::NTuple{N,T2}) = sum(map(BilinearDotFunctor(), promote(a, b)...))
 
-@inline bilindot{T, N}(a::NTuple{N,T}, b::FixedArray{T,1,Tuple{N}}) = sum(map(DotFunctor(), a, b))
-@inline bilindot{T1, T2, N}(a::NTuple{N,T1}, b::FixedArray{T2,1,Tuple{N}}) = sum(map(DotFunctor(), promote(a, b)...))
-
+@inline bilindot{T, N}(a::NTuple{N,T}, b::FixedArray{T,1,Tuple{N}}) = sum(map(BilinearDotFunctor(), a, b))
+@inline bilindot{T1, T2, N}(a::NTuple{N,T1}, b::FixedArray{T2,1,Tuple{N}}) = sum(map(BilinearDotFunctor(), promote(a, b)...))
 
 @inline bilindot{T1, T2}(a::NTuple{1,T1}, b::NTuple{1,T2}) = @inbounds return a[1]*b[1]
 @inline bilindot{T1, T2}(a::NTuple{2,T1}, b::NTuple{2,T2}) = @inbounds return (a[1]*b[1] + a[2]*b[2])
 @inline bilindot{T1, T2}(a::NTuple{3,T1}, b::NTuple{3,T2}) = @inbounds return (a[1]*b[1] + a[2]*b[2] + a[3]*b[3])
 @inline bilindot{T1, T2}(a::NTuple{4,T1}, b::NTuple{4,T2}) = @inbounds return (a[1]*b[1] + a[2]*b[2] + a[3]*b[3]+a[4]*b[4])
-@inline bilindot{T1, T2, N}(a::NTuple{N,T1}, b::NTuple{N,T2}) = sum(map(DotFunctor(), promote(a, b)...))
+@inline bilindot{T1, T2, N}(a::NTuple{N,T1}, b::NTuple{N,T2}) = sum(map(BilinearDotFunctor(), promote(a, b)...))
 
 
 
